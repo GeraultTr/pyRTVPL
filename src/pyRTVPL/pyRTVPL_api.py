@@ -31,7 +31,7 @@ for _ in range(3):
     nrays_dif = 1_000_000 if diffuse_par > 0 else 0 # default 1_000_000
     maxiter = 4 # 4 default, # 1 is equivalent to caribu's default
     # TODO
-    theta_dir=(np.pi/2) - np.deg2rad(90) # Zenith angle (0, pi/2)
+    theta_dir= np.deg2rad(83) # Zenith angle (0, pi/2 / 90°)
     phi_dir = np.deg2rad(180) # Azimuth angle (0, 2pi)
 
     absorbed, Erel = VPL.trace_absorbed_incident(tris, tau, rho, tau_soil, rho_soil, direct_par, diffuse_par, theta_dir, phi_dir, 
