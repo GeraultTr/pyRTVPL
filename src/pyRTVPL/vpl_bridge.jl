@@ -6,11 +6,11 @@ using PlantRayTracer
 using SkyDomes
 
 export mesh_from_numpy, accelerate_for_sky,
-       sky_sources_for, sky_sources_from_PAR,
+       sky_sources_from_PAR,
        trace_absorbed, trace_absorbed_incident
 
        
-# ---------- 1) Build mesh AND return materials ----------
+# 1) Build mesh from triangles, build soil and return materials
 function mesh_from_numpy(tris::AbstractArray{<:Real,3},
                          τ::AbstractVector{<:Real},
                          ρ::AbstractVector{<:Real},
@@ -46,7 +46,7 @@ function mesh_from_numpy(tris::AbstractArray{<:Real,3},
 end
 
 
-# ---------- 2) Accelerate (creates grid cloner) ----------
+# 2) Accelerate (creates grid cloner = periodize)
 function accelerate_for_sky(mesh; nx=5, ny=5, dx=0.0, dy=0.0,
                             parallel=true, maxiter=4, pkill=0.9)
     settings = PlantRayTracer.RTSettings(nx=nx, ny=ny, dx=dx, dy=dy,
@@ -58,23 +58,7 @@ function accelerate_for_sky(mesh; nx=5, ny=5, dx=0.0, dy=0.0,
 end
 
 
-# ---------- 3a) Clear-sky sources (Julia computes PAR) ----------
-function sky_sources_for(acc_mesh, ; lat_deg=48.7, DOY=182, f=0.5, TL=3.0,
-                         nrays_dir=100_000, nrays_dif=1_000_000,
-                         ntheta=9, nphi=12)
-    cs = SkyDomes.clear_sky(lat=deg2rad(lat_deg), DOY=DOY, f=f, TL=TL)
-    f_dir = SkyDomes.waveband_conversion(Itype=:direct,  waveband=:PAR, mode=:flux)
-    f_dif = SkyDomes.waveband_conversion(Itype=:diffuse, waveband=:PAR, mode=:flux)
-    return SkyDomes.sky(acc_mesh;
-        Idir=cs.Idir*f_dir, nrays_dir=nrays_dir, theta_dir=cs.theta, phi_dir=cs.phi,
-        Idif=cs.Idif*f_dif,  nrays_dif=nrays_dif,
-        sky_model=SkyDomes.StandardSky, dome_method=SkyDomes.equal_solid_angles,
-        ntheta=ntheta, nphi=nphi
-    )
-end
-
-
-# ---------- 3b) Your own PAR + angles ----------
+# 3) build the sky dome
 function sky_sources_from_PAR(acc_mesh, ; direct_PAR::Real, diffuse_PAR::Real,
                               theta_dir::Real, phi_dir::Real,
                               nrays_dir=100_000, nrays_dif=1_000_000,
@@ -88,14 +72,15 @@ function sky_sources_from_PAR(acc_mesh, ; direct_PAR::Real, diffuse_PAR::Real,
     )
 end
 
-# ---------- 4) Trace (read power from the mats you built) ----------
+
+# 4) Trace and read power from the materials
 function trace_absorbed(acc_mesh, mats, settings, sources)
     rt = PlantRayTracer.RayTracer(acc_mesh, sources; settings=settings)
     PlantRayTracer.trace!(rt)
     return [PlantRayTracer.power(m)[1] for m in mats]  # absorbed PAR per triangle
 end
 
-# ---------- 5) One-shot: you pass PAR & angles from Python ----------
+# 5) Assembly function to get inputs from Python and send results to Python
 function trace_absorbed_incident(tris, τ, ρ, tau_soil, rho_soil, direct_PAR, diffuse_PAR, theta_dir, phi_dir;
                                  nx=5, ny=5, dx=1.0, dy=1.0,
                                  parallel=true, maxiter=4, pkill=0.9,
