@@ -19,17 +19,23 @@ tris = np.array([  # (ntri,3,3)
 ], dtype=float)
 tau = np.array([0.10, 0.10])  # 10 % transmittance
 rho = np.array([0.05, 0.05])  # 5 % reflectance
+tau_soil = 0.0
+rho_soil = 0.2
 
 for _ in range(3):
     t1 = time.time()
-    direct_par = 600.
+    # Proper unit
+    direct_par = 600. # µmol.m-2.s-1
     diffuse_par = 0.
-    nrays_dir = 100_000 if direct_par > 0 else 0
-    nrays_dif = 1_000_000 if diffuse_par > 0 else 0
-    theta_dir=np.pi/2 # Zenith angle (0, pi/2)
-    phi_dir = np.pi # Azimuth angle (0, 2pi)
-    results = VPL.trace_absorbed_incident(tris, tau, rho, direct_par, diffuse_par, theta_dir, phi_dir, nx=2, ny=2, dx=0.15, dy=0.15, nrays_dir=nrays_dir, nrays_dif=nrays_dif)
+    nrays_dir = 100_000 if direct_par > 0 else 0 # default 100_000
+    nrays_dif = 1_000_000 if diffuse_par > 0 else 0 # default 1_000_000
+    maxiter = 4 # 4 default, # 1 is equivalent to caribu's default
+    # TODO
+    theta_dir=(np.pi/2) - np.deg2rad(90) # Zenith angle (0, pi/2)
+    phi_dir = np.deg2rad(180) # Azimuth angle (0, 2pi)
+
+    absorbed, Erel = VPL.trace_absorbed_incident(tris, tau, rho, tau_soil, rho_soil, direct_par, diffuse_par, theta_dir, phi_dir, 
+                                                 nx=2, ny=2, dx=1., dy=1., maxiter=maxiter, nrays_dir=nrays_dir, nrays_dif=nrays_dif)
     t2 = time.time()
     print(t2 - t1)
-    absorbed, incident = results
-    print(absorbed, incident)
+    print(absorbed, Erel)

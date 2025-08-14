@@ -13,7 +13,8 @@ export mesh_from_numpy, accelerate_for_sky,
 # ---------- 1) Build mesh AND return materials ----------
 function mesh_from_numpy(tris::AbstractArray{<:Real,3},
                          τ::AbstractVector{<:Real},
-                         ρ::AbstractVector{<:Real})
+                         ρ::AbstractVector{<:Real},
+                         tau_soil, rho_soil; dx=1.0, dy=1.0)
     ntri = size(tris,1)
     @assert size(tris,2)==3 && size(tris,3)==3 "tris must be (ntri,3,3)"
     @assert length(τ)==ntri && length(ρ)==ntri "τ, ρ must have length ntri"
@@ -27,30 +28,19 @@ function mesh_from_numpy(tris::AbstractArray{<:Real,3},
         verts[k] = V(Float64(tris[i,3,1]), Float64(tris[i,3,2]), Float64(tris[i,3,3])); k+=1
     end
 
-    # Try normals if your PGP needs them
-    mesh = let m = nothing
-        try
-            # Compute one unit normal per triangle
-            normals = Vector{V}(undef, ntri)
-            @inbounds for i in 1:ntri
-                a,b,c = verts[3i-2], verts[3i-1], verts[3i]
-                ux,uy,uz = b[1]-a[1], b[2]-a[2], b[3]-a[3]
-                vx,vy,vz = c[1]-a[1], c[2]-a[2], c[3]-a[3]
-                nx = uy*vz - uz*vy; ny = uz*vx - ux*vz; nz = ux*vy - uy*vx
-                L = sqrt(nx*nx + ny*ny + nz*nz)
-                normals[i] = L==0 ? V(0.0,0.0,1.0) : V(nx/L, ny/L, nz/L)
-            end
-            PlantGeomPrimitives.Mesh(verts, normals)
-        catch
-            PlantGeomPrimitives.Mesh(verts)
-        end
-    end
+    mesh = PlantGeomPrimitives.Mesh(verts)
 
     # One Lambertian per triangle (band 1 = PAR)
     mats = [PlantRayTracer.Lambertian(τ=Float64(τ[i]), ρ=Float64(ρ[i])) for i in 1:ntri]
 
     # Attach materials using the function in your PGP
     PlantGeomPrimitives.add_property!(mesh, :materials, mats)
+
+    soil = PlantGeomPrimitives.Rectangle(length = dx, width = dy) ## Vertical plane initialized in x = 0, centered in y = 0, upward in z
+    PlantGeomPrimitives.rotatey!(soil, π/2) ## Rotate in the xy plane
+    PlantGeomPrimitives.translate!(soil, Vec(0.0, dy/2, 0.0)) ## Corner at (0, 0, 0)
+    soil_material = PlantRayTracer.Lambertian(τ = tau_soil, ρ = rho_soil)
+    PlantGeomPrimitives.add!(mesh, soil, materials = soil_material)
 
     return mesh, mats
 end
@@ -88,11 +78,10 @@ end
 function sky_sources_from_PAR(acc_mesh, ; direct_PAR::Real, diffuse_PAR::Real,
                               theta_dir::Real, phi_dir::Real,
                               nrays_dir=100_000, nrays_dif=1_000_000,
-                              ntheta=9, nphi=12, angles_in_degrees::Bool=false)
-    θ = angles_in_degrees ? deg2rad(theta_dir) : theta_dir
-    ϕ = angles_in_degrees ? deg2rad(phi_dir)   : phi_dir
+                              ntheta=9, nphi=12)
+    
     return SkyDomes.sky(acc_mesh;
-        Idir=direct_PAR, nrays_dir=nrays_dir, theta_dir=θ, phi_dir=ϕ,
+        Idir=direct_PAR, nrays_dir=nrays_dir, theta_dir=theta_dir, phi_dir=phi_dir,
         Idif=diffuse_PAR, nrays_dif=nrays_dif,
         sky_model=SkyDomes.StandardSky, dome_method=SkyDomes.equal_solid_angles,
         ntheta=ntheta, nphi=nphi
@@ -107,25 +96,28 @@ function trace_absorbed(acc_mesh, mats, settings, sources)
 end
 
 # ---------- 5) One-shot: you pass PAR & angles from Python ----------
-function trace_absorbed_incident(tris, τ, ρ, direct_PAR, diffuse_PAR, theta_dir, phi_dir;
-                                 nx=5, ny=5, dx=0.0, dy=0.0,
+function trace_absorbed_incident(tris, τ, ρ, tau_soil, rho_soil, direct_PAR, diffuse_PAR, theta_dir, phi_dir;
+                                 nx=5, ny=5, dx=1.0, dy=1.0,
                                  parallel=true, maxiter=4, pkill=0.9,
                                  nrays_dir=100_000, nrays_dif=1_000_000,
-                                 ntheta=9, nphi=12, angles_in_degrees::Bool=false)
-    mesh, mats = mesh_from_numpy(tris, τ, ρ)
+                                 ntheta=9, nphi=12)
+    total_PAR = direct_PAR + diffuse_PAR
+    mesh, mats = mesh_from_numpy(tris, τ, ρ, tau_soil, rho_soil, dx=dx, dy=dy)
+    areas = PlantGeomPrimitives.areas(mesh)
     acc_mesh, settings = accelerate_for_sky(mesh; nx=nx, ny=ny, dx=dx, dy=dy,
                                             parallel=parallel, maxiter=maxiter, pkill=pkill)
     sources = sky_sources_from_PAR(acc_mesh;
         direct_PAR=direct_PAR, diffuse_PAR=diffuse_PAR,
         theta_dir=theta_dir, phi_dir=phi_dir, nrays_dir=nrays_dir, nrays_dif=nrays_dif,
-        ntheta=ntheta, nphi=nphi, angles_in_degrees=angles_in_degrees
-    )
+        ntheta=ntheta, nphi=nphi)
     absorbed = trace_absorbed(acc_mesh, mats, settings, sources)
-    incident = similar(absorbed)
+    Erel = similar(absorbed)
+    PARa = similar(absorbed)
     @inbounds for i in eachindex(absorbed)
-        incident[i] = absorbed[i] / (1 - (Float64(ρ[i]) + Float64(τ[i])))
+        Erel[i] = (absorbed[i] / areas[i]) / total_PAR
+        PARa[i] = absorbed[i] / areas[i]
     end
-    return (absorbed=absorbed, incident=incident)
+    return (PARa=PARa, Erel=Erel)
 end
 
 end # module
