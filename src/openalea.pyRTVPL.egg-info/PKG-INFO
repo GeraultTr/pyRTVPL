@@ -1,0 +1,54 @@
+Metadata-Version: 2.4
+Name: openalea.pyRTVPL
+Version: 0.1.dev4+g7571a42.d20250815
+Summary: VirtualPlantLab Raytracer api for python
+Author-email: Tristan Gérault <tristan.gerault@inrae.fr>, Christophe Pradal <christophe.pradal@fnria.fr>
+License-Expression: CECILL-C
+Project-URL: Repository, https://github.com/GeraultTr/pyRTVPL
+Classifier: Development Status :: 1 - Planning
+Classifier: Intended Audience :: Science/Research
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Topic :: Scientific/Engineering
+Classifier: Framework :: OpenAlea
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Provides-Extra: test
+Requires-Dist: pytest; extra == "test"
+Requires-Dist: nbmake; extra == "test"
+Provides-Extra: dev
+Requires-Dist: pytest>=6; extra == "dev"
+Requires-Dist: pytest-cov>=3; extra == "dev"
+Provides-Extra: doc
+Requires-Dist: pydata-sphinx-theme; extra == "doc"
+Requires-Dist: myst-parser; extra == "doc"
+Requires-Dist: sphinx-favicon; extra == "doc"
+Requires-Dist: ipykernel; extra == "doc"
+Requires-Dist: sphinx-copybutton; extra == "doc"
+Requires-Dist: ipython_genutils; extra == "doc"
+Requires-Dist: nbsphinx; extra == "doc"
+
+# TODO
+
+
+# Intallation
+
+Do not use conda, rather manual installation for julia and VPL dependancies
+
+```
+Official website for julia installation, example for linux : curl -fsSL https://install.julialang.org | sh
+Manual install from master is safer to ensure compatibility and avoid old versions
+]add VirtualPlantLab#master
+import Pkg
+Pkg.add(url="https://github.com/VirtualPlantLab/PlantGeomPrimitives.jl", rev = "master")
+Pkg.add(url="https://github.com/VirtualPlantLab/PlantRayTracer.jl", rev = "master")
+Pkg.add(url = "https://github.com/VirtualPlantLab/SkyDomes.jl", rev = "master")
+```

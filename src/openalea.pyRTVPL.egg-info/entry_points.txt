@@ -1,0 +1,2 @@
+[wralea]
+my_pkg = openalea.pyRTVPL_wralea
