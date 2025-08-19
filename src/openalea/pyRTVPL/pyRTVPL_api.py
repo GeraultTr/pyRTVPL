@@ -1,4 +1,8 @@
+import os
 
+n = max(1, int(0.8 * os.cpu_count()))
+os.environ["JULIA_NUM_THREADS"] = str(n)
+os.environ["PYTHON_JULIACALL_HANDLE_SIGNALS"] = "yes"
 
 from juliacall import Main as jl
 # input("Julia exe dir (Sys.BINDIR):", jl.seval("Sys.BINDIR"))
@@ -9,9 +13,11 @@ import os, sys
 class pyRTVPL:
 
     tau_soil = 0.0 # no transmitance
-    rho_soil = 0.15 # Caribu default reflectance
+    rho_soil = 0. # Caribu default reflectance
+    # rho_soil = 0.15 # Caribu default reflectance
 
     nrays_dir = 100_000 # default 100_000
+    # nrays_dif = 1_000_000 # default 1_000_000
     nrays_dif = 1_000_000 # default 1_000_000
 
     def __init__(self, scene_xrange: float=1., scene_yrange: float=1., periodise_numberx: int=2, periodise_numbery: int=2, maxiter: int = 4):
@@ -43,10 +49,8 @@ class pyRTVPL:
             np.ndarray: PARa, absorbed PAR in µmol.m-2.s-1
             np.ndarray: Erel, relative absorption (adim)
         """
-
+        
         PARa, Erel = self.VPL.trace_absorbed_incident(triangles, tau, rho, self.tau_soil, self.rho_soil, direct_PAR, diffuse_PAR, theta_dir, phi_dir, 
-                                                 nx=self.periodise_numberx, ny=self.periodise_numbery, dx=self.scene_xrange, dy=self.scene_yrange, maxiter=self.maxiter, nrays_dir=self.nrays_dir, nrays_dif=self.nrays_dif)
+                                                 nx=self.periodise_numberx, ny=self.periodise_numbery, dx=self.scene_xrange, dy=self.scene_yrange, maxiter=self.maxiter, 
+                                                 nrays_dir=self.nrays_dir, nrays_dif=self.nrays_dif, ntheta=5, nphi=4)
         return PARa, Erel
-
-
-
