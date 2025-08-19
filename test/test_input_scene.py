@@ -73,4 +73,4 @@ if __name__ == "__main__":
     for _ in range(10):
         PARa, Erel = rt(triangle_scene_np, tau_np, rho_np, direct_PAR=direct_PAR, diffuse_PAR=diffuse_PAR)
 
-    print(PARa, Erel)
+    print("PARa", min(PARa), max(PARa), "Erel", min(Erel), max(Erel))
