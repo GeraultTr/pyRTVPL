@@ -3,6 +3,7 @@ from alinea.caribu.sky_tools import GenSky, GetLight, Gensun, GetLightsSun, spit
 from openalea.plantgl.all import *
 from openalea.plantgl.all import Scene
 from alinea.caribu.plantgl_adaptor import scene_to_cscene
+import time
 
 
 def _initialize_model_on_stand(c_scene, energy, diffuse_model, azimuts, zenits, DOY, hourTU, latitude, scene_xrange, scene_yrange):
@@ -101,8 +102,10 @@ if __name__ == "__main__":
                                                                                         scene_yrange=1.)
 
     print("caribu starts...")
+    t1 = time.time()
     raw, aggregated_sky = c_stand_scene_sky.run(direct=True, infinite=True)
     print("caribu finished")
+    print("regular run took :", time.time() - t1)
 
     Erel = aggregated_sky['par']['Eabs']  #: Erel is the relative surfacic absorbed energy per organ
     PARa = {k: v * PARi for k, v in Erel.items()}
@@ -111,7 +114,8 @@ if __name__ == "__main__":
          raw_Erel += l
 
     raw_PARa = [v * PARi for v in raw_Erel]
-    print(raw_PARa, len(raw_PARa))
-    print(len(PARa))
 
     print("PARa", min(raw_PARa), max(raw_PARa), "Erel", min(raw_Erel), max(raw_Erel))
+    
+    # Requiered before shutting down
+    del c_stand_scene_sky, c_stand_scene_sun

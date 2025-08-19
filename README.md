@@ -21,7 +21,9 @@ Pkg.add(url = "https://github.com/VirtualPlantLab/SkyDomes.jl", rev = "master")
 In your conda environment install the following
 
 ```
-mamba install -c conda-forge -c openalea3 python numpy juliacall openalea.mtg alinea.caribu
+mamba install -c conda-forge -c openalea3 python numpy openalea.mtg alinea.caribu
+
+pip install juliacall
 ```
 
 PyRTVPL dev install

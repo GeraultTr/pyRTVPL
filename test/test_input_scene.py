@@ -2,6 +2,7 @@
 # public packages
 import math
 import numpy as np
+import time
 
 # OA dependancies
 from openalea.plantgl.all import *
@@ -70,7 +71,8 @@ if __name__ == "__main__":
     rt(triangle_scene_np, tau_np, rho_np, direct_PAR=direct_PAR, diffuse_PAR=diffuse_PAR)
     print("Finished")
 
-    for _ in range(10):
-        PARa, Erel = rt(triangle_scene_np, tau_np, rho_np, direct_PAR=direct_PAR, diffuse_PAR=diffuse_PAR)
+    t1 = time.time()
+    PARa, Erel = rt(triangle_scene_np, tau_np, rho_np, direct_PAR=direct_PAR, diffuse_PAR=diffuse_PAR)
+    print("regular run took :", time.time() - t1)
 
     print("PARa", min(PARa), max(PARa), "Erel", min(Erel), max(Erel))
