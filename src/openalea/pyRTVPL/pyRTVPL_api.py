@@ -13,9 +13,8 @@ class pyRTVPL:
 
     nrays_dir = 100_000 # default 100_000
     nrays_dif = 1_000_000 # default 1_000_000
-    maxiter = 4 # 4 default, # 1 is equivalent to caribu's default
 
-    def __init__(self, scene_xrange: float=1., scene_yrange: float=1., periodise_numberx: int=2, periodise_numbery: int=2):
+    def __init__(self, scene_xrange: float=1., scene_yrange: float=1., periodise_numberx: int=2, periodise_numbery: int=2, maxiter: int = 4):
         self_path = sys.modules[self.__class__.__module__].__file__
         bridge_path = os.path.dirname(os.path.abspath(self_path))
         jl.include(os.path.join(bridge_path, "vpl_bridge.jl"))
@@ -25,6 +24,7 @@ class pyRTVPL:
         self.scene_yrange = scene_yrange
         self.periodise_numberx = periodise_numberx
         self.periodise_numbery = periodise_numbery
+        self.maxiter = maxiter
 
 
     def __call__(self, triangles, tau, rho, direct_PAR: float, diffuse_PAR: float, theta_dir: float=1.4486, phi_dir: float=3.1416):

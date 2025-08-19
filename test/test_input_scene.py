@@ -41,27 +41,6 @@ def triangle_scene_conversion(c_scene):
         tau[unique_shape_id] = 0.05
         rho[unique_shape_id] = 0.10
 
-        # retreive optical properties and assign using the mapping
-        # class_name = props["class_name"][vid]
-        # if class_name in ('LeafElement1', 'LeafElement'):
-        #     # opt[unique_shape_id] = (0.10, 0.05)  #: (reflectance, transmittance) of the adaxial side of the leaves
-        #     tau[unique_shape_id] = 0.05
-        #     rho[unique_shape_id] = 0.10
-        # elif class_name == 'StemElement':
-        #     # opt[unique_shape_id] = (0.10,)  #: (reflectance,) of the stems
-        #     tau[unique_shape_id] = 0.
-        #     rho[unique_shape_id] = 0.10
-        # else:
-        #     print('Warning: unknown element type')
-
-        # Move the plants position in the stand
-        # for i, triple in enumerate(triangle_scene[unique_shape_id]):
-        #     translated_triangle = []
-        #     for x, y, z in triple:
-        #         xr, yr, znr = rotate_point_z((x, y, z), rotation)
-        #         translated_triangle.append((xr + pos[0], yr + pos[1], znr + pos[2]))
-        #     triangle_scene[unique_shape_id][i] = translated_triangle
-
         # Next unique id
         unique_shape_id += 1
     return triangle_scene, tau, rho
@@ -71,7 +50,6 @@ if __name__ == "__main__":
     input_path = 'test/inputs/test_scene.bgeom'
     scene = Scene(input_path)
     c_scene = scene_to_cscene(scene)
-    # print(c_scene)
 
     t_scene, tau, rho = triangle_scene_conversion(c_scene)
     flat_triangle_scene = []
@@ -83,11 +61,16 @@ if __name__ == "__main__":
 
     tau_np = np.array([0.05 for _ in range(triangle_n)])
     rho_np = np.array([0.1 for _ in range(triangle_n)])
-    print(tau_np.shape)
 
-    rt = pyRTVPL(scene_xrange=1., scene_yrange=1., periodise_numberx=2, periodise_numbery=2)
-    print("first")
-    rt(triangle_scene_np, tau_np, rho_np, direct_PAR=600., diffuse_PAR=0.)
+    direct_PAR = 0.
+    diffuse_PAR = 600.
+
+    rt = pyRTVPL(scene_xrange=1., scene_yrange=1., periodise_numberx=2, periodise_numbery=2, maxiter=1)
+    print("First compile...")
+    rt(triangle_scene_np, tau_np, rho_np, direct_PAR=direct_PAR, diffuse_PAR=diffuse_PAR)
+    print("Finished")
 
     for _ in range(10):
-        rt(t_scene, tau, rho, direct_PAR=600., diffuse_PAR=0.)
+        PARa, Erel = rt(triangle_scene_np, tau_np, rho_np, direct_PAR=direct_PAR, diffuse_PAR=diffuse_PAR)
+
+    print(PARa, Erel)
