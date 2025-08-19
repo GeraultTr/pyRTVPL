@@ -48,6 +48,7 @@ def triangle_scene_conversion(c_scene):
 
 # @note main
 if __name__ == "__main__":
+    # input_path = 'test/inputs/test_big_scene.bgeom'
     input_path = 'test/inputs/test_scene.bgeom'
     scene = Scene(input_path)
     c_scene = scene_to_cscene(scene)
@@ -66,7 +67,7 @@ if __name__ == "__main__":
     direct_PAR = 0.
     diffuse_PAR = 600.
 
-    rt = pyRTVPL(scene_xrange=1., scene_yrange=1., periodise_numberx=2, periodise_numbery=2, maxiter=1)
+    rt = pyRTVPL(scene_xrange=0.15, scene_yrange=0.15, periodise_numberx=1, periodise_numbery=1, maxiter=1)
     print("First compile...")
     rt(triangle_scene_np, tau_np, rho_np, direct_PAR=direct_PAR, diffuse_PAR=diffuse_PAR)
     print("Finished")

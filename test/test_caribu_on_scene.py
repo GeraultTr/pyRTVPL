@@ -85,6 +85,7 @@ def _initialize_model_on_stand(c_scene, energy, diffuse_model, azimuts, zenits, 
 
 
 if __name__ == "__main__":
+    # input_path = 'test/inputs/test_big_scene.bgeom'
     input_path = 'test/inputs/test_scene.bgeom'
     scene = Scene(input_path)
     c_scene = scene_to_cscene(scene)
@@ -98,8 +99,8 @@ if __name__ == "__main__":
                                                                                         DOY=10,
                                                                                         hourTU=12,
                                                                                         latitude=48.84425,
-                                                                                        scene_xrange=1.,
-                                                                                        scene_yrange=1.)
+                                                                                        scene_xrange=0.15,
+                                                                                        scene_yrange=0.15)
 
     print("caribu starts...")
     t1 = time.time()
