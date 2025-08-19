@@ -1,7 +1,8 @@
-# TODO
+# Description
+ TODO
 
-
-# Intallation
+# Installation
+## Julia Intallation
 
 Do not use conda, rather manual installation for julia and VPL dependancies
 
@@ -13,4 +14,17 @@ import Pkg
 Pkg.add(url="https://github.com/VirtualPlantLab/PlantGeomPrimitives.jl", rev = "master")
 Pkg.add(url="https://github.com/VirtualPlantLab/PlantRayTracer.jl", rev = "master")
 Pkg.add(url = "https://github.com/VirtualPlantLab/SkyDomes.jl", rev = "master")
+```
+
+## Python installation
+
+In your conda environment install the following
+
+```
+mamba install -c conda-forge -c openalea3 python numpy juliacall openalea.mtg alinea.caribu
+```
+
+PyRTVPL dev install
+```
+pip install -e .
 ```
