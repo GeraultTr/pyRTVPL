@@ -102,7 +102,7 @@ function trace_absorbed_incident(tris, τ, ρ, tau_soil, rho_soil, direct_PAR, d
         Erel[i] = (absorbed[i] / areas[i]) / total_PAR
         PARa[i] = absorbed[i] / areas[i]
     end
-    return (PARa=PARa, Erel=Erel)
+    return (PARa=PARa, Erel=Erel, areas=areas)
 end
 
 end # module
