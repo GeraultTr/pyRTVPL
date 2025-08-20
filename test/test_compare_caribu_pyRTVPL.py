@@ -112,11 +112,10 @@ def triangle_scene_conversion(c_scene):
 
 if __name__ == "__main__":
     # input_path = 'test/inputs/test_big_scene.bgeom'
-    input_path = 'test/inputs/test_scene.bgeom'
+    input_path, scene_xrange, scene_yrange = 'test/inputs/test_scene.bgeom', 0.15, 0.15
     scene = Scene(input_path)
     c_scene = scene_to_cscene(scene)
     PARi = 600.
-
 
 
     # ---------- CARIBU ----------
@@ -128,8 +127,8 @@ if __name__ == "__main__":
                                                                                         DOY=100,
                                                                                         hourTU=12,
                                                                                         latitude=48.84425,
-                                                                                        scene_xrange=0.15,
-                                                                                        scene_yrange=0.15)
+                                                                                        scene_xrange=scene_xrange,
+                                                                                        scene_yrange=scene_yrange)
 
     print("caribu starts...")
     t1 = time.time()
@@ -170,7 +169,7 @@ if __name__ == "__main__":
     diffuse_PAR = PARi
 
     print("Importing VPL RayTracer from Julia...")
-    rt = pyRTVPL(scene_xrange=0.15, scene_yrange=0.15, periodise_numberx=1, periodise_numbery=1, maxiter=1)
+    rt = pyRTVPL(scene_xrange=0.15, scene_yrange=0.15, periodise_numberx=4, periodise_numbery=4, maxiter=1)
     print("First compile...")
     rt(triangle_scene_np, tau_np, rho_np, direct_PAR=direct_PAR, diffuse_PAR=diffuse_PAR)
     print("Finished")
