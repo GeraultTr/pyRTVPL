@@ -111,8 +111,11 @@ def triangle_scene_conversion(c_scene):
 
 
 if __name__ == "__main__":
-    # input_path = 'test/inputs/test_big_scene.bgeom'
-    input_path, scene_xrange, scene_yrange = 'test/inputs/test_scene.bgeom', 0.15, 0.15
+
+    #input_path, scene_xrange, scene_yrange = 'test/inputs/test_scene.bgeom', 0.15, 0.15
+    input_path, scene_xrange, scene_yrange = 'test/inputs/test_big_scene.bgeom', 0.56, 0.56
+
+
     scene = Scene(input_path)
     c_scene = scene_to_cscene(scene)
     PARi = 600.
@@ -170,7 +173,7 @@ if __name__ == "__main__":
     diffuse_PAR = PARi
 
     print("Importing VPL RayTracer from Julia...")
-    rt = pyRTVPL(scene_xrange=0.15, scene_yrange=0.15, periodize=True, maxiter=1, generate_soil=generate_soil)
+    rt = pyRTVPL(scene_xrange=scene_xrange, scene_yrange=scene_yrange, periodize=True, maxiter=1, generate_soil=generate_soil)
     print("First compile...")
     rt(triangle_scene_np, tau_np, rho_np, direct_PAR=direct_PAR, diffuse_PAR=diffuse_PAR)
     print("Finished")
@@ -188,4 +191,4 @@ if __name__ == "__main__":
     print("pyRTVPL absorbed (µmol.s-1)", (vpl_PARa * areas).sum())
     print("Caribu absorbed per triangle (µmol.s-1)", (caribu_PARa * areas))
     print("Differences in absorbed energy per triangle (µmol.s-1)", (caribu_PARa - vpl_PARa) * areas)
-    print("corresponding shape index", indexer)
+    #print("corresponding shape index", indexer)
