@@ -67,7 +67,7 @@ if __name__ == "__main__":
     direct_PAR = 0.
     diffuse_PAR = 600.
 
-    rt = pyRTVPL(scene_xrange=0.15, scene_yrange=0.15, periodise_numberx=1, periodise_numbery=1, maxiter=1)
+    rt = pyRTVPL(scene_xrange=0.15, scene_yrange=0.15, periodize=True, maxiter=1)
     print("First compile...")
     rt(triangle_scene_np, tau_np, rho_np, direct_PAR=direct_PAR, diffuse_PAR=diffuse_PAR)
     print("Finished")

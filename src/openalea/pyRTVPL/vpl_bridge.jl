@@ -67,7 +67,7 @@ function sky_sources_from_PAR(acc_mesh, ; direct_PAR::Real, diffuse_PAR::Real,
     return SkyDomes.sky(acc_mesh;
         Idir=direct_PAR, nrays_dir=nrays_dir, theta_dir=theta_dir, phi_dir=phi_dir,
         Idif=diffuse_PAR, nrays_dif=nrays_dif,
-        sky_model=SkyDomes.StandardSky, dome_method=SkyDomes.equal_solid_angles,
+        sky_model=SkyDomes.StandardSky, dome_method=SkyDomes.equal_solid_angles, # method equalizing each sky subdivision area
         ntheta=ntheta, nphi=nphi
     )
 end
