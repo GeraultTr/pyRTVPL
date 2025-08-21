@@ -20,7 +20,7 @@ class pyRTVPL:
 
     minimal_zenith = np.deg2rad(9.23) # Lower zenit of Caribu 46 sky
 
-    def __init__(self, scene_xrange: float=1., scene_yrange: float=1., periodize: bool = True, maxiter: int = 4, ntheta: int = 8, nphi: int = 6):
+    def __init__(self, scene_xrange: float=1., scene_yrange: float=1., periodize: bool = True, maxiter: int = 4, ntheta: int = 8, nphi: int = 6, generate_soil: bool = True):
         """_summary_
 
         Args:
@@ -42,6 +42,7 @@ class pyRTVPL:
         self.maxiter = maxiter
         self.ntheta = ntheta
         self.nphi = nphi
+        self.generate_soil = generate_soil
 
 
     def __call__(self, triangles, tau, rho, direct_PAR: float, diffuse_PAR: float, theta_dir: float=1.4486, phi_dir: float=3.1416):
@@ -64,9 +65,10 @@ class pyRTVPL:
         periodise_numberx = self.n_replications(canopy_height, self.minimal_zenith, self.scene_xrange) if self.periodize else 0
         periodise_numbery = self.n_replications(canopy_height, self.minimal_zenith, self.scene_yrange) if self.periodize else 0
         
-        out = self.VPL.trace_absorbed_incident(triangles, tau, rho, self.tau_soil, self.rho_soil, direct_PAR, diffuse_PAR, theta_dir, phi_dir, 
-                                                 nx=periodise_numberx, ny=periodise_numbery, dx=self.scene_xrange, dy=self.scene_yrange, maxiter=self.maxiter, 
-                                                 nrays_dir=self.nrays_dir if direct_PAR > 0 else 0, nrays_dif=self.nrays_dif if diffuse_PAR > 0 else 0, ntheta=self.ntheta, nphi=self.nphi)
+        out = self.VPL.trace_absorbed_incident(triangles, tau, rho, direct_PAR, diffuse_PAR, theta_dir, phi_dir, 
+                                                 nx=periodise_numberx, ny=periodise_numbery, dx=self.scene_xrange, dy=self.scene_yrange, generate_soil=self.generate_soil, tau_soil=self.tau_soil, rho_soil=self.rho_soil, 
+                                                 maxiter=self.maxiter, nrays_dir=self.nrays_dir if direct_PAR > 0 else 0, nrays_dif=self.nrays_dif if diffuse_PAR > 0 else 0, 
+                                                 ntheta=self.ntheta, nphi=self.nphi)
         return out
     
 

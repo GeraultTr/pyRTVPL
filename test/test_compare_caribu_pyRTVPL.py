@@ -152,6 +152,7 @@ if __name__ == "__main__":
 
 
     # ---------- PYRTVPL ----------
+    generate_soil = False
     t_scene, tau, rho = triangle_scene_conversion(c_scene)
     flat_triangle_scene = []
     per_triangle_indexer = []
@@ -169,7 +170,7 @@ if __name__ == "__main__":
     diffuse_PAR = PARi
 
     print("Importing VPL RayTracer from Julia...")
-    rt = pyRTVPL(scene_xrange=0.15, scene_yrange=0.15, periodize=True, maxiter=1)
+    rt = pyRTVPL(scene_xrange=0.15, scene_yrange=0.15, periodize=True, maxiter=1, generate_soil=generate_soil)
     print("First compile...")
     rt(triangle_scene_np, tau_np, rho_np, direct_PAR=direct_PAR, diffuse_PAR=diffuse_PAR)
     print("Finished")
@@ -179,7 +180,8 @@ if __name__ == "__main__":
     print("VPL regular run took :", time.time() - t1, "s")
 
     vpl_PARa = np.array(PARa)
-    areas = areas[:-2] # Remove the two soil triangles
+    if generate_soil:
+        areas = areas[:-2] # Remove the two soil triangles
 
     print("Difference PARa (% PARi)", 100 * (caribu_PARa - vpl_PARa) / PARi)
     print("Caribu absorbed (µmol.s-1)", (caribu_PARa * areas).sum())

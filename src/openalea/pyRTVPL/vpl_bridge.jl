@@ -13,8 +13,7 @@ export mesh_from_numpy, accelerate_for_sky,
 # 1) Build mesh from triangles, build soil and return materials
 function mesh_from_numpy(tris::AbstractArray{<:Real,3},
                          τ::AbstractVector{<:Real},
-                         ρ::AbstractVector{<:Real},
-                         tau_soil, rho_soil; dx=1.0, dy=1.0)
+                         ρ::AbstractVector{<:Real}; generate_soil=true, dx=1.0, dy=1.0, tau_soil=0.0, rho_soil=0.15)
     ntri = size(tris,1)
     @assert size(tris,2)==3 && size(tris,3)==3 "tris must be (ntri,3,3)"
     @assert length(τ)==ntri && length(ρ)==ntri "τ, ρ must have length ntri"
@@ -36,11 +35,13 @@ function mesh_from_numpy(tris::AbstractArray{<:Real,3},
     # Attach materials using the function in your PGP
     PlantGeomPrimitives.add_property!(mesh, :materials, mats)
 
-    soil = PlantGeomPrimitives.Rectangle(length = dx, width = dy) ## Vertical plane initialized in x = 0, centered in y = 0, upward in z
-    PlantGeomPrimitives.rotatey!(soil, π/2) ## Rotate in the xy plane
-    PlantGeomPrimitives.translate!(soil, Vec(0.0, dy/2, 0.0)) ## Corner at (0, 0, 0)
-    soil_material = PlantRayTracer.Lambertian(τ = tau_soil, ρ = rho_soil)
-    PlantGeomPrimitives.add!(mesh, soil, materials = soil_material)
+    if generate_soil
+        soil = PlantGeomPrimitives.Rectangle(length = dx, width = dy) ## Vertical plane initialized in x = 0, centered in y = 0, upward in z
+        PlantGeomPrimitives.rotatey!(soil, π/2) ## Rotate in the xy plane
+        PlantGeomPrimitives.translate!(soil, Vec(0.0, dy/2, 0.0)) ## Corner at (0, 0, 0)
+        soil_material = PlantRayTracer.Lambertian(τ = tau_soil, ρ = rho_soil)
+        PlantGeomPrimitives.add!(mesh, soil, materials = soil_material)
+    end
 
     return mesh, mats
 end
@@ -81,13 +82,13 @@ function trace_absorbed(acc_mesh, mats, settings, sources)
 end
 
 # 5) Assembly function to get inputs from Python and send results to Python
-function trace_absorbed_incident(tris, τ, ρ, tau_soil, rho_soil, direct_PAR, diffuse_PAR, theta_dir, phi_dir;
+function trace_absorbed_incident(tris, τ, ρ, direct_PAR, diffuse_PAR, theta_dir, phi_dir;
                                  nx=5, ny=5, dx=1.0, dy=1.0,
-                                 parallel=true, maxiter=4, pkill=0.9,
+                                 parallel=true, generate_soil=true, tau_soil=0.0, rho_soil=0.15,  maxiter=4, pkill=0.9,
                                  nrays_dir=100_000, nrays_dif=1_000_000,
                                  ntheta=9, nphi=12)
     total_PAR = direct_PAR + diffuse_PAR
-    mesh, mats = mesh_from_numpy(tris, τ, ρ, tau_soil, rho_soil, dx=dx, dy=dy)
+    mesh, mats = mesh_from_numpy(tris, τ, ρ, dx=dx, dy=dy, generate_soil=generate_soil, tau_soil=tau_soil, rho_soil=rho_soil)
     areas = PlantGeomPrimitives.areas(mesh)
     acc_mesh, settings = accelerate_for_sky(mesh; nx=nx, ny=ny, dx=dx, dy=dy,
                                             parallel=parallel, maxiter=maxiter, pkill=pkill)
