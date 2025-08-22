@@ -8,7 +8,6 @@ n = max(1, int(0.8 * os.cpu_count()))
 os.environ["JULIA_NUM_THREADS"] = str(n)
 os.environ["PYTHON_JULIACALL_HANDLE_SIGNALS"] = "yes"
 
-# from juliacall import Main as jl
 # input("Julia exe dir (Sys.BINDIR):", jl.seval("Sys.BINDIR"))
 import numpy as np 
 import os
