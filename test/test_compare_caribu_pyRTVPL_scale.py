@@ -114,6 +114,7 @@ def triangle_scene_conversion(c_scene):
 
 if __name__ == "__main__":
 
+    # Path to folder containing the scenes
     scenes_folder = r"test\inputs\test_scaled_scenes"
 
     scenes_paths = []
@@ -125,18 +126,26 @@ if __name__ == "__main__":
                 if os.path.getsize(file_path) > 10 * 1024:  # 10KB in bytes
                     scenes_paths.append(file_path)
 
+    #Julia VPL Raytracer parameters
     scene_xrange, scene_yrange = 0.56, 0.56 #specific to this set of scenes
-   
+    generate_soil = False
+
+    # Dataframe to store results
     results_df = pd.DataFrame()
     time_df = pd.DataFrame()
 
+    #Compilation of the VPL Raytracer
+    print("Importing VPL RayTracer from Julia...")
+    rt = pyRTVPL(scene_xrange=scene_xrange, scene_yrange=scene_yrange, periodize=True, maxiter=1, generate_soil=generate_soil)
 
     for input_path in scenes_paths:
         
+        scene_index = scenes_paths.index(input_path)
         scene = Scene(input_path)
         c_scene = scene_to_cscene(scene)
         PARi = 600.
 
+        print("Loading scene ", scene_index + 1, " / ", len(scenes_paths), ": ", input_path)
 
         # ---------- CARIBU ----------
         c_stand_scene_sky, c_stand_scene_sun, indexer = _initialize_model_on_stand(c_scene=c_scene, 
@@ -173,7 +182,6 @@ if __name__ == "__main__":
 
 
         # ---------- PYRTVPL ----------
-        generate_soil = False
         t_scene, tau, rho = triangle_scene_conversion(c_scene)
         flat_triangle_scene = []
         per_triangle_indexer = []
@@ -190,11 +198,11 @@ if __name__ == "__main__":
         direct_PAR = 0.
         diffuse_PAR = PARi
 
-        print("Importing VPL RayTracer from Julia...")
-        rt = pyRTVPL(scene_xrange=scene_xrange, scene_yrange=scene_yrange, periodize=True, maxiter=1, generate_soil=generate_soil)
-        print("First compile...")
+        t1 = time.time()
+        print("Initial compile...")
         rt(triangle_scene_np, tau_np, rho_np, direct_PAR=direct_PAR, diffuse_PAR=diffuse_PAR)
-        print("Finished")
+        compile_time = time.time() - t1
+        print("Finished compile in ", compile_time, "s")
 
         t1 = time.time()
         PARa, Erel, areas = rt(triangle_scene_np, tau_np, rho_np, direct_PAR=direct_PAR, diffuse_PAR=diffuse_PAR)
