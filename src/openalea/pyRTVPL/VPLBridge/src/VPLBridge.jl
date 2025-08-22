@@ -4,12 +4,14 @@ using VirtualPlantLab
 using PlantGeomPrimitives
 using PlantRayTracer
 using SkyDomes
+using PrecompileTools
 
-export mesh_from_numpy, accelerate_for_sky,
-       sky_sources_from_PAR,
-       trace_absorbed, trace_absorbed_incident
-
+# export mesh_from_numpy, accelerate_for_sky,
+#        sky_sources_from_PAR,
+#        trace_absorbed, trace_absorbed_incident
+export trace_absorbed_incident
        
+
 # 1) Build mesh from triangles, build soil and return materials
 function mesh_from_numpy(tris::AbstractArray{<:Real,3},
                          τ::AbstractVector{<:Real},
@@ -104,6 +106,26 @@ function trace_absorbed_incident(tris, τ, ρ, direct_PAR, diffuse_PAR, theta_di
         PARa[i] = absorbed[i] / areas[i]
     end
     return (PARa=PARa, Erel=Erel, areas=areas)
+end
+
+
+# ---------- Precompile workload ----------
+@setup_workload begin
+    # tiny scene (1 tri), concrete Float64 types
+    tris = zeros(Float64, 1, 3, 3)
+    tris[1,1,:] .= (0.0, 0.0, 0.0)
+    tris[1,2,:] .= (1.0, 0.0, 0.0)
+    tris[1,3,:] .= (0.0, 1.0, 0.0)
+    τ = Float64[0.0]
+    ρ = Float64[0.15]
+
+    @compile_workload begin
+        # exercise the high-level entry
+        trace_absorbed_incident(tris, τ, ρ, 600.0, 0.0, 1.4486,  3.1416;
+            nx=1, ny=1, dx=1.0, dy=1.0, generate_soil=false, tau_soil=0.0, rho_soil=0.15,
+        maxiter=1, pkill=0.9, nrays_dir=1, nrays_dif=1, ntheta=8, nphi=6)
+    end
+
 end
 
 end # module

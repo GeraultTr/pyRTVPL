@@ -1,13 +1,17 @@
 import os
 
+# Assignments before importing juliacall
+current_file_path = os.path.dirname(os.path.abspath(__file__))
+project_env = os.path.join(current_file_path, "VPLBridge")
+
 n = max(1, int(0.8 * os.cpu_count()))
 os.environ["JULIA_NUM_THREADS"] = str(n)
 os.environ["PYTHON_JULIACALL_HANDLE_SIGNALS"] = "yes"
 
-from juliacall import Main as jl
+# from juliacall import Main as jl
 # input("Julia exe dir (Sys.BINDIR):", jl.seval("Sys.BINDIR"))
 import numpy as np 
-import os, sys
+import os
 
 
 class pyRTVPL:
@@ -20,7 +24,7 @@ class pyRTVPL:
 
     minimal_zenith = np.deg2rad(9.23) # Lower zenit of Caribu 46 sky
 
-    def __init__(self, scene_xrange: float=1., scene_yrange: float=1., periodize: bool = True, maxiter: int = 4, ntheta: int = 8, nphi: int = 6, generate_soil: bool = True):
+    def __init__(self, scene_xrange: float=1., scene_yrange: float=1., periodize: bool = True, maxiter: int = 4, ntheta: int = 8, nphi: int = 6, generate_soil: bool = True, import_image: bool = True):
         """_summary_
 
         Args:
@@ -31,9 +35,16 @@ class pyRTVPL:
             ntheta (int, optional): _description_. Defaults to 8, to near Caribu's 46 sky dome.
             nphi (int, optional): _description_. Defaults to 6, to near Caribu's 46 sky dome.
         """
-        self_path = sys.modules[self.__class__.__module__].__file__
-        bridge_path = os.path.dirname(os.path.abspath(self_path))
-        jl.include(os.path.join(bridge_path, "vpl_bridge.jl"))
+        if import_image: os.environ["PYTHON_JULIACALL_SYSIMAGE"]  = os.path.join(current_file_path, "VPLBridge", "vplbridge_sysimage.so")  # or .dylib/.dll
+        from juliacall import Main as jl
+
+        if import_image:    
+            jl.seval(fr'using Pkg; Pkg.activate(raw"{project_env}")')
+            jl.seval("using VPLBridge")
+        else:
+            jl.seval(fr'using Pkg; Pkg.activate(raw"{project_env}")')
+            jl.include(os.path.join(project_env, "src", "VPLBridge.jl"))
+
         self.VPL = jl.VPLBridge
 
         self.scene_xrange = scene_xrange
@@ -71,6 +82,11 @@ class pyRTVPL:
                                                  ntheta=self.ntheta, nphi=self.nphi)
         return out
     
+    def warmup(self, triangles, tau, rho, direct_PAR: float, diffuse_PAR: float, theta_dir: float=1.4486, phi_dir: float=3.1416):
+        self.VPL.trace_absorbed_incident(triangles, tau, rho, direct_PAR, diffuse_PAR, theta_dir, phi_dir, 
+                                                 nx=1, ny=1, dx=self.scene_xrange, dy=self.scene_yrange, generate_soil=self.generate_soil, tau_soil=self.tau_soil, rho_soil=self.rho_soil, 
+                                                 maxiter=self.maxiter, nrays_dir=1, nrays_dif=1, 
+                                                 ntheta=self.ntheta, nphi=self.nphi)
 
     def n_replications(self, canopy_height, lower_plane_zenith, scene_range):
         projected_length = canopy_height / np.tan(lower_plane_zenith)

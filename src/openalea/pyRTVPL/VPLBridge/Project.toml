@@ -1,0 +1,18 @@
+name = "VPLBridge"
+uuid = "fd822a6a-ea93-41cf-9044-fadf9d48904f"
+authors = ["GeraultTr <tristan.gerault@inrae.fr>"]
+version = "0.1.0"
+
+[deps]
+PlantGeomPrimitives = "7eef3cc5-4580-4ff0-8f6f-933507db6664"
+PlantRayTracer = "78485975-e4aa-407d-b3bb-ded5a4265d05"
+PrecompileTools = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
+SkyDomes = "1838625c-7cf7-40c6-898b-904883e4b556"
+VirtualPlantLab = "b977ecfa-1b9a-418d-909d-4ebe565736ce"
+
+[compat]
+PlantGeomPrimitives = "0.1.0"
+PlantRayTracer = "0.1.0"
+PrecompileTools = "1.2.1"
+SkyDomes = "0.1.9"
+VirtualPlantLab = "0.1.0"
