@@ -1,5 +1,6 @@
 *.so
 *.dll
 *.dylib
+*.pyc
 *build_env*
-*__pycache__*
+__pycache__/
