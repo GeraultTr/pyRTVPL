@@ -1,4 +1,4 @@
-import os
+import os, sys
 
 # Assignments before importing juliacall
 current_file_path = os.path.dirname(os.path.abspath(__file__))
@@ -35,7 +35,8 @@ class pyRTVPL:
             ntheta (int, optional): _description_. Defaults to 8, to near Caribu's 46 sky dome.
             nphi (int, optional): _description_. Defaults to 6, to near Caribu's 46 sky dome.
         """
-        if import_image: os.environ["PYTHON_JULIACALL_SYSIMAGE"]  = os.path.join(current_file_path, "VPLBridge", "vplbridge_sysimage.so")  # or .dylib/.dll
+        ext = "dll" if sys.platform.startswith("win") else ("dylib" if sys.platform == "darwin" else "so")
+        if import_image: os.environ["PYTHON_JULIACALL_SYSIMAGE"]  = os.path.join(current_file_path, "VPLBridge", f"vplbridge_sysimage.{ext}")  # or .dylib/.dll
         from juliacall import Main as jl
 
         if import_image:    
