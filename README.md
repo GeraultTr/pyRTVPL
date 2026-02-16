@@ -41,7 +41,7 @@ These installations filled a proper Project.toml that can be used to build the s
 In your conda environment install the following
 
 ```
-mamba install -c conda-forge -c openalea3 python numpy openalea.mtg alinea.caribu
+mamba install -c conda-forge -c openalea3 python numpy openalea.mtg openalea.caribu
 
 pip install juliacall
 ```

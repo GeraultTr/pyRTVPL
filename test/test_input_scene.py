@@ -7,7 +7,7 @@ import time
 # OA dependancies
 from openalea.plantgl.all import *
 from openalea.plantgl.all import Scene
-from alinea.caribu.plantgl_adaptor import scene_to_cscene
+from openalea.caribu.plantgl_adaptor import scene_to_cscene
 from openalea.pyRTVPL import pyRTVPL
 
 def rotate_point_z(point, angle_deg):

@@ -1,8 +1,8 @@
-from alinea.caribu.CaribuScene import CaribuScene
-from alinea.caribu.sky_tools import GenSky, GetLight, Gensun, GetLightsSun, spitters_horaire
+from openalea.caribu.CaribuScene import CaribuScene
+from openalea.caribu.sky_tools import GenSky, GetLight, Gensun, GetLightsSun, spitters_horaire
 from openalea.plantgl.all import *
 from openalea.plantgl.all import Scene
-from alinea.caribu.plantgl_adaptor import scene_to_cscene
+from openalea.caribu.plantgl_adaptor import scene_to_cscene
 import time
 
 
